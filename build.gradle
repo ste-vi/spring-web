@@ -1,0 +1,43 @@
+plugins {
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
+    id 'java'
+}
+
+group 'stevi.spring.web'
+version '1.0.0'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation files('C:\\space\\projects\\spring-builder\\build\\libs\\spring-core-1.0.0.jar')
+
+    implementation 'org.apache.tomcat.embed:tomcat-embed-core:10.1.11'
+    implementation 'org.apache.tomcat.embed:tomcat-embed-jasper:10.1.11'
+    implementation 'org.apache.tomcat.embed:tomcat-embed-logging-juli:10.1.11'
+    implementation 'org.apache.tomcat.embed:tomcat-embed-el:10.1.11'
+
+    compileOnly 'jakarta.servlet:jakarta.servlet-api:6.0.0'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+
+    compileOnly 'org.projectlombok:lombok:1.18.28'
+    annotationProcessor 'org.projectlombok:lombok:1.18.28'
+
+    testCompileOnly 'org.projectlombok:lombok:1.18.28'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.28'
+}
+
+jar {
+    manifest {
+        attributes "Main-Class": "stevi.spring.Main"
+    }
+}
+
+test {
+    useJUnitPlatform()
+}
+
+
