@@ -8,6 +8,7 @@ import org.apache.catalina.startup.ContextConfig;
 import org.apache.catalina.startup.Tomcat;
 import org.apache.catalina.webresources.StandardRoot;
 import stevi.spring.Main;
+import stevi.spring.web.servlet.DispatcherServlet;
 
 import java.io.File;
 import java.net.URL;
@@ -17,8 +18,9 @@ public class TomcatStarter {
     @SneakyThrows
     public void start() {
         Tomcat tomcat = createTomcatServer();
-        configureContext(tomcat);
-        setupConnection(tomcat);
+        Context context = createContext(tomcat);
+        registerDispatcherServlet(context);
+        startConnection(tomcat);
     }
 
     private Tomcat createTomcatServer() {
@@ -29,7 +31,7 @@ public class TomcatStarter {
         return tomcat;
     }
 
-    private void configureContext(Tomcat tomcat) {
+    private Context createContext(Tomcat tomcat) {
         String docBase = new File(".").getAbsolutePath();
         Context context = tomcat.addContext("", docBase);
         context.addLifecycleListener(new ContextConfig());
@@ -39,9 +41,17 @@ public class TomcatStarter {
         root.createWebResourceSet(WebResourceRoot.ResourceSetType.PRE, "/WEB-INF/classes", url, "/");
 
         context.setResources(root);
+
+        return context;
     }
 
-    private void setupConnection(Tomcat tomcat) throws LifecycleException {
+    private void registerDispatcherServlet(Context context) {
+        DispatcherServlet dispatcher = new DispatcherServlet();
+        Tomcat.addServlet(context, "DispatcherServlet", dispatcher);
+        context.addServletMappingDecoded("/*", "DispatcherServlet");
+    }
+
+    private void startConnection(Tomcat tomcat) throws LifecycleException {
         tomcat.getConnector();
         tomcat.start();
         tomcat.getServer().await();
