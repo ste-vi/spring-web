@@ -1,11 +1,11 @@
 package stevi.spring;
 
-import stevi.spring.web.TomcatStarter;
+import stevi.spring.web.webserver.TomcatWebServer;
 
 public class Main {
 
     public static void main(String[] args) {
-        TomcatStarter tomcatStarter = new TomcatStarter();
+        TomcatWebServer tomcatStarter = new TomcatWebServer();
         tomcatStarter.start();
     }
 }

@@ -18,6 +18,8 @@ dependencies {
     implementation 'org.apache.tomcat.embed:tomcat-embed-logging-juli:10.1.11'
     implementation 'org.apache.tomcat.embed:tomcat-embed-el:10.1.11'
 
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
+
     compileOnly 'jakarta.servlet:jakarta.servlet-api:6.0.0'
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'

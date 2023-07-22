@@ -1,4 +1,4 @@
-package stevi.spring.web;
+package stevi.spring.web.webserver;
 
 import lombok.SneakyThrows;
 import org.apache.catalina.Context;
@@ -13,11 +13,19 @@ import stevi.spring.web.servlet.DispatcherServlet;
 import java.io.File;
 import java.net.URL;
 
-public class TomcatStarter {
+public class TomcatWebServer implements WebServer {
+
+    private Tomcat tomcat;
+
+    @Override
+    public int getPort() {
+        return DEFAULT_PORT;
+    }
 
     @SneakyThrows
+    @Override
     public void start() {
-        Tomcat tomcat = createTomcatServer();
+        tomcat = createTomcatServer();
         Context context = createContext(tomcat);
         registerDispatcherServlet(context);
         startConnection(tomcat);
@@ -26,7 +34,7 @@ public class TomcatStarter {
     private Tomcat createTomcatServer() {
         Tomcat tomcat = new Tomcat();
         tomcat.setBaseDir("/");
-        tomcat.setPort(8080);
+        tomcat.setPort(DEFAULT_PORT);
 
         return tomcat;
     }
@@ -59,5 +67,11 @@ public class TomcatStarter {
 
     private URL findClassLocation(Class<?> clazz) {
         return clazz.getProtectionDomain().getCodeSource().getLocation();
+    }
+
+    @SneakyThrows
+    @Override
+    public void stop() {
+        tomcat.stop();
     }
 }
