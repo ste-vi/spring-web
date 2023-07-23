@@ -57,7 +57,7 @@ public class WebApplicationContext implements ApplicationContext {
             return (T) controllerBeanCache.get(aClass);
         }
 
-        T bean = controllerBeanFactory.createBean(aClass);
+        T bean = controllerBeanFactory.createBeanWithoutProxy(aClass);
         putBeanIntoCache(aClass, bean);
 
         return bean;
