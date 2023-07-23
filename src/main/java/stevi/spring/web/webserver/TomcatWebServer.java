@@ -16,6 +16,11 @@ import java.net.URL;
 public class TomcatWebServer implements WebServer {
 
     private Tomcat tomcat;
+    private final DispatcherServlet dispatcherServlet;
+
+    public TomcatWebServer(DispatcherServlet dispatcherServlet) {
+        this.dispatcherServlet = dispatcherServlet;
+    }
 
     @Override
     public int getPort() {
@@ -54,8 +59,7 @@ public class TomcatWebServer implements WebServer {
     }
 
     private void registerDispatcherServlet(Context context) {
-        DispatcherServlet dispatcher = new DispatcherServlet();
-        Tomcat.addServlet(context, "DispatcherServlet", dispatcher);
+        Tomcat.addServlet(context, "DispatcherServlet", dispatcherServlet);
         context.addServletMappingDecoded("/*", "DispatcherServlet");
     }
 

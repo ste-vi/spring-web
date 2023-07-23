@@ -3,28 +3,30 @@ package stevi.spring.web.servlet;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import javassist.NotFoundException;
+import lombok.SneakyThrows;
 import stevi.spring.core.config.DefaultConfig;
-import stevi.spring.web.annotations.GetMapping;
-import stevi.spring.web.annotations.RequestMapping;
 import stevi.spring.web.context.WebApplicationContext;
+import stevi.spring.web.handler.Handler;
+import stevi.spring.web.handler.HandlerMapping;
+import stevi.spring.web.handler.HandlerMethod;
+import stevi.spring.web.handler.PathPatternMatchableHandlerMapping;
+import stevi.spring.web.handler.RequestMappingHandler;
+import stevi.spring.web.servlet.view.HtmlPageView;
+import stevi.spring.web.servlet.view.JsonView;
 
-import java.lang.reflect.Method;
-import java.util.Map;
-
-import static java.util.stream.Collectors.toMap;
+import java.io.IOException;
 
 public class DispatcherServlet extends FrameworkServlet {
 
-    private final WebApplicationContext webApplicationContext = new WebApplicationContext(new DefaultConfig("stevi.spring"));
-    private final Map<String, Object> requestPathToControllerMap;
+    private final HandlerMapping handlerMapping;
+    private final Handler handler;
     private final ObjectMapper objectMapper;
 
-    public DispatcherServlet() {
-        requestPathToControllerMap = webApplicationContext.getAllControllerBeans().stream()
-                .filter(controller -> controller.getClass().isAnnotationPresent(RequestMapping.class))
-                .collect(toMap(this::getRequestPathFromControllerClass, controller -> controller));
-
-        objectMapper = new ObjectMapper();
+    public DispatcherServlet(WebApplicationContext webApplicationContext) {
+        this.handlerMapping = new PathPatternMatchableHandlerMapping(webApplicationContext);
+        this.handler = new RequestMappingHandler();
+        this.objectMapper = new ObjectMapper();
     }
 
     @Override
@@ -32,34 +34,34 @@ public class DispatcherServlet extends FrameworkServlet {
         doDispatch(request, response);
     }
 
-    private void doDispatch(HttpServletRequest request, HttpServletResponse response) throws Exception {
-        String resultBodyString = "{\"message\": \"Hello from DispatcherServlet!\"}";
-
-        if (requestPathToControllerMap.containsKey(request.getPathInfo())) {
-            Object controller = requestPathToControllerMap.get(request.getPathInfo());
-            for (Method declaredMethod : controller.getClass().getDeclaredMethods()) {
-                if ("GET".equals(request.getMethod())) {
-                    if (declaredMethod.isAnnotationPresent(GetMapping.class)) {
-                        Object result = declaredMethod.invoke(controller);
-                        Class<?> returnType = declaredMethod.getReturnType();
-                        resultBodyString = objectMapper.writeValueAsString(result);
-                    }
-                }
-            }
-        }
-
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-        response.getWriter().write(resultBodyString);
+    private void doDispatch(HttpServletRequest request, HttpServletResponse response) {
+        HandlerMethod handlerMethod = handlerMapping.resolveHandlerMethodFromRequestPath(request);
+        ModelAndView modelAndView = handler.handle(request, response, handlerMethod);
+        renderView(modelAndView, request, response);
     }
 
-    private String getRequestPathFromControllerClass(Object controller) {
-        RequestMapping requestMapping = controller.getClass().getAnnotation(RequestMapping.class);
-        String requestPath = requestMapping.value();
-
-        if (requestPath.isBlank()) {
-            requestPath = "/";
+    @SneakyThrows
+    private void renderView(ModelAndView modelAndView, HttpServletRequest request, HttpServletResponse response) {
+        if (modelAndView.getView() instanceof HtmlPageView) {
+            renderHTMLPage();
+        } else if (modelAndView.getView() instanceof JsonView) {
+            renderJSONView(modelAndView, response);
+        } else {
+            throw new NotFoundException("View not found");
         }
-        return requestPath;
+    }
+
+    private void renderHTMLPage() {
+        throw new UnsupportedOperationException("HTML pages not yet supported, please return object to map into JSON");
+    }
+
+    private void renderJSONView(ModelAndView modelAndView, HttpServletResponse response) throws IOException {
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        response.setStatus(modelAndView.getHttpStatus().getValue());
+
+        if (modelAndView.getModel() != null) {
+            response.getWriter().write(objectMapper.writeValueAsString(modelAndView.getModel()));
+        }
     }
 }

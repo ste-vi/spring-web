@@ -1,8 +1,11 @@
 package stevi.spring.web.context;
 
+import lombok.Setter;
 import stevi.spring.core.config.Config;
 import stevi.spring.core.context.ApplicationContext;
+import stevi.spring.core.context.AutowiredApplicationContext;
 import stevi.spring.core.context.BeanCache;
+import stevi.spring.core.factory.BeanFactory;
 import stevi.spring.test.TestController;
 import stevi.spring.web.annotations.Controller;
 
@@ -11,57 +14,58 @@ import java.util.Set;
 
 public class WebApplicationContext implements ApplicationContext {
 
+    @Setter
+    private BeanFactory controllerBeanFactory;
+
     private final Config config;
 
-    private final BeanCache beanCache;
+    private final BeanCache controllerBeanCache;
 
-    public WebApplicationContext(Config config) {
+    private final ApplicationContext autowiredApplicationContext;
+
+    // todo: how to inject services into controllers, since both contexts do not know about each other
+
+    public WebApplicationContext(Config config, ApplicationContext autowiredApplicationContext) {
         this.config = config;
-        this.beanCache = new BeanCache();
-        this.beanCache.put(TestController.class, new TestController());
+        this.autowiredApplicationContext = autowiredApplicationContext;
+        this.controllerBeanCache = new BeanCache();
     }
 
     @Override
     public void postInit() {
         Set<Class<?>> annotatedClasses = config.getReflectionsScanner().getTypesAnnotatedWith(Controller.class);
-        annotatedClasses.forEach(this::getBean);
+        annotatedClasses.forEach(this::getControllerBean);
     }
 
     @Override
-    public <T> T getBeanByName(String s) {
+    public <T> T getBeanByName(String beanName) {
         return null;
     }
 
     /**
-     * Fetches bean from cache.
-     * Created new bean and sets into cache of not found.
+     * Fetches bean from autowired application context.
      *
      * @param aClass class to get bean based on
      */
     @Override
     public <T> T getBean(Class<T> aClass) {
-        Class<? extends T> implClass = getImplementationClass(aClass);
-        if (beanCache.contains(implClass)) {
-            return (T) beanCache.get(implClass);
-        }
-
-      /*  T bean = beanFactory.createBean(implClass);
-        putBeanIntoCache(implClass, bean);*/
-
-        return (T) new TestController();
+        return autowiredApplicationContext.getBean(aClass);
     }
 
-    private <T> Class<? extends T> getImplementationClass(Class<T> aClass) {
-        Class<? extends T> implClass = aClass;
-        if (implClass.isInterface()) {
-            implClass = config.getImplementation(aClass);
+    public <T> T getControllerBean(Class<T> aClass) {
+        if (controllerBeanCache.contains(aClass)) {
+            return (T) controllerBeanCache.get(aClass);
         }
-        return implClass;
+
+        T bean = controllerBeanFactory.createBean(aClass);
+        putBeanIntoCache(aClass, bean);
+
+        return bean;
     }
 
     private <T> void putBeanIntoCache(Class<? extends T> implClass, T object) {
         if (implClass.isAnnotationPresent(Controller.class)) {
-            beanCache.put(implClass, object);
+            controllerBeanCache.put(implClass, object);
         }
     }
 
@@ -71,6 +75,6 @@ public class WebApplicationContext implements ApplicationContext {
     }
 
     public List<Object> getAllControllerBeans() {
-        return beanCache.getValues();
+        return controllerBeanCache.getValues();
     }
 }
