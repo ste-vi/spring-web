@@ -7,8 +7,12 @@ import stevi.spring.core.anotation.Service;
 @Service
 public class TestService {
 
-    public TestResponse getTestResponse() {
+    public TestResponse getTestResponse(String name, Integer age) {
         log.info("DI works!");
-        return new TestResponse();
+        TestResponse testResponse = new TestResponse();
+        testResponse.setName(name);
+        testResponse.setAge(age);
+
+        return testResponse;
     }
 }

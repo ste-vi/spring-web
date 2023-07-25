@@ -12,6 +12,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import static java.util.stream.Collectors.toMap;
+
 public class PathPatternMatchableHandlerMapping implements HandlerMapping {
 
     private final Map<MethodPathContext, Object> requestPathToControllerMap;
@@ -25,7 +27,7 @@ public class PathPatternMatchableHandlerMapping implements HandlerMapping {
         HandlerMethod handlerMethod = null;
 
         String requestPathInfo = request.getPathInfo();
-        Map<String, String[]> requestParameterMap = request.getParameterMap();
+        Map<String, String[]> parameterMap = request.getParameterMap();
 
         for (Map.Entry<MethodPathContext, Object> entry : requestPathToControllerMap.entrySet()) {
             MethodPathContext methodFullPath = entry.getKey();
@@ -33,23 +35,31 @@ public class PathPatternMatchableHandlerMapping implements HandlerMapping {
             boolean isUrlMatch = isUrlMatchController(requestPathInfo, methodFullPath.getMethodFullPath());
             if (isUrlMatch) {
                 Method method = methodFullPath.getMethod();
-                Parameter[] parameters = method.getParameters();
+                Map<String, Parameter> methodParametersMap = Arrays.stream(method.getParameters()).collect(toMap(Parameter::getName, p -> p));
 
-
-
-/*                for (int i = 0; i < parameters.length; i++) {
-                    //parameters[i] = methodFullPath.getMethodParameterPathContexts();
-
-                }*/
+                List<MethodParameter> methodParameters = methodFullPath.getMethodParameterPathContexts()
+                        .stream()
+                        .filter(pathContext -> {
+                            String[] queryParameterValues = parameterMap.get(pathContext.getUrlParameterName());
+                            return queryParameterValues != null && queryParameterValues.length == 1;
+                        })
+                        .map(pathContext -> {
+                            String parameterValue = parameterMap.get(pathContext.getUrlParameterName())[0];
+                            Parameter parameter = methodParametersMap.get(pathContext.getJavaParameterName());
+                            return MethodParameter
+                                    .builder().parameter(parameter)
+                                    .actualValue(parameterValue)
+                                    .build();
+                        })
+                        .toList();
 
                 if (HttpMethod.GET.name().equals(request.getMethod()) && method.isAnnotationPresent(GetMapping.class)) {
                     handlerMethod = HandlerMethod.builder()
                             .method(method)
                             .bean(controller)
                             .beanType(controller.getClass())
-                            .parameters(parameters)
+                            .methodParameters(methodParameters)
                             .build();
-
                     break;
                 }
             }
@@ -61,13 +71,6 @@ public class PathPatternMatchableHandlerMapping implements HandlerMapping {
 
         return handlerMethod;
     }
-
-    // /users
-    // /users/{id}
-    // users/profile
-    // users/profile/{id}
-    // users/{id}/profile
-    // users/{id}/profile?name=2
 
     private boolean isUrlMatchController(String requestPath, String controllerPath) {
         List<String> requestPathParts = Arrays.stream(requestPath.split("/")).toList();

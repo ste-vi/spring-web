@@ -28,24 +28,7 @@ public final class PathContextBuilderUtil {
 
                     for (var method : controllerClass.getDeclaredMethods()) {
                         if (method.isAnnotationPresent(GetMapping.class)) {
-                            GetMapping getMapping = method.getAnnotation(GetMapping.class);
-
-                            String methodMath = getMapping.value().startsWith("/") ? getMapping.value().substring(1) : getMapping.value();
-
-                            String fullMethodPath;
-                            if (methodMath.isEmpty()) {
-                                fullMethodPath = requestMapping.value();
-                            } else {
-                                String requestMappingPath = requestMapping.value().endsWith("/") ? requestMapping.value() : requestMapping.value() + "/";
-                                fullMethodPath = requestMappingPath + methodMath;
-                            }
-
-                            MethodPathContext methodPathContext = MethodPathContext.builder()
-                                    .methodFullPath(fullMethodPath)
-                                    .method(method)
-                                    .methodParameterPathContexts(getMethodParameterPathContexts(method))
-                                    .build();
-
+                            MethodPathContext methodPathContext = initMethodPathContext(requestMapping, method);
                             methodPathContextToControllerMap.put(methodPathContext, controller);
                         }
                     }
@@ -53,6 +36,26 @@ public final class PathContextBuilderUtil {
 
 
         return methodPathContextToControllerMap;
+    }
+
+    private static MethodPathContext initMethodPathContext(RequestMapping requestMapping, Method method) {
+        GetMapping getMapping = method.getAnnotation(GetMapping.class);
+
+        String methodMath = getMapping.value().startsWith("/") ? getMapping.value().substring(1) : getMapping.value();
+
+        String fullMethodPath;
+        if (methodMath.isEmpty()) {
+            fullMethodPath = requestMapping.value();
+        } else {
+            String requestMappingPath = requestMapping.value().endsWith("/") ? requestMapping.value() : requestMapping.value() + "/";
+            fullMethodPath = requestMappingPath + methodMath;
+        }
+
+        return MethodPathContext.builder()
+                .methodFullPath(fullMethodPath)
+                .method(method)
+                .methodParameterPathContexts(getMethodParameterPathContexts(method))
+                .build();
     }
 
     private static List<MethodParameterPathContext> getMethodParameterPathContexts(Method method) {
@@ -72,10 +75,10 @@ public final class PathContextBuilderUtil {
         return methodParameterPathContexts;
     }
 
-    private static MethodParameterPathContext getParameterPathContext(String pathVariable, Parameter parameter) {
+    private static MethodParameterPathContext getParameterPathContext(String urlParam, Parameter parameter) {
         return MethodParameterPathContext.builder()
                 .javaParameterName(parameter.getName())
-                .urlParameterName(pathVariable)
+                .urlParameterName(urlParam)
                 .build();
     }
 }

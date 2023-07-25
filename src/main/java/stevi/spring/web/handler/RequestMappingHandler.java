@@ -18,7 +18,10 @@ public class RequestMappingHandler implements Handler {
     @Override
     public ModelAndView handle(HttpServletRequest request, HttpServletResponse response, HandlerMethod handlerMethod) {
         Method method = handlerMethod.getMethod();
-        Object model = method.invoke(handlerMethod.getBean());
+
+        Object[] params = MethodParameterCastUtil.getCastedMethodParameterValues(handlerMethod.getMethodParameters());
+
+        Object model = method.invoke(handlerMethod.getBean(), params);
 
         HttpStatus status = method.isAnnotationPresent(ResponseStatus.class)
                 ? method.getAnnotation(ResponseStatus.class).value()
