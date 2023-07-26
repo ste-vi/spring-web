@@ -2,13 +2,17 @@ package stevi.spring.web.handler;
 
 import jakarta.servlet.http.HttpServletRequest;
 import stevi.spring.web.annotations.GetMapping;
+import stevi.spring.web.annotations.PathVariable;
 import stevi.spring.web.context.WebApplicationContext;
+import stevi.spring.web.handler.pathcontext.MethodParameterPathContext;
 import stevi.spring.web.handler.pathcontext.MethodPathContext;
 import stevi.spring.web.http.HttpMethod;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -37,21 +41,51 @@ public class PathPatternMatchableHandlerMapping implements HandlerMapping {
                 Method method = methodFullPath.getMethod();
                 Map<String, Parameter> methodParametersMap = Arrays.stream(method.getParameters()).collect(toMap(Parameter::getName, p -> p));
 
-                List<MethodParameter> methodParameters = methodFullPath.getMethodParameterPathContexts()
-                        .stream()
-                        .filter(pathContext -> {
-                            String[] queryParameterValues = parameterMap.get(pathContext.getUrlParameterName());
-                            return queryParameterValues != null && queryParameterValues.length == 1;
-                        })
-                        .map(pathContext -> {
-                            String parameterValue = parameterMap.get(pathContext.getUrlParameterName())[0];
-                            Parameter parameter = methodParametersMap.get(pathContext.getJavaParameterName());
-                            return MethodParameter
-                                    .builder().parameter(parameter)
-                                    .actualValue(parameterValue)
-                                    .build();
-                        })
-                        .toList();
+                List<MethodParameter> methodParameters = new ArrayList<>();
+
+                for (MethodParameterPathContext pathContext : methodFullPath.getMethodParameterPathContexts()) {
+
+                    String[] queryParameterValues = parameterMap.get(pathContext.getUrlParameterName());
+                    if (queryParameterValues != null && queryParameterValues.length == 1) {
+                        String parameterValue = parameterMap.get(pathContext.getUrlParameterName())[0];
+                        Parameter parameter = methodParametersMap.get(pathContext.getJavaParameterName());
+                        MethodParameter methodParameter = MethodParameter
+                                .builder().parameter(parameter)
+                                .actualValue(parameterValue)
+                                .build();
+
+                        methodParameters.add(methodParameter);
+                    }
+                }
+
+                List<String> requestPathParts = Arrays.stream(requestPathInfo.split("/")).toList();
+                List<String> controllerPathParts = Arrays.stream(methodFullPath.getMethodFullPath().split("/")).toList();
+
+                for (int i = 0; i < requestPathParts.size(); i++) {
+                    String requestString = requestPathParts.get(i);
+                    String controllerString = controllerPathParts.get(i);
+
+                    if (isControllerPathPartStringExpectsIdParameter(controllerString)) {
+                        controllerString = controllerString.replace("{", "");
+                        String controllerPathFormattedString = controllerString.replace("}", "");
+
+                        Parameter matchedPathVariableParam = Arrays.stream(method.getParameters())
+                                .filter(param -> param.isAnnotationPresent(PathVariable.class))
+                                .filter(param -> controllerPathFormattedString.equals(param.getAnnotation(PathVariable.class).value()))
+                                .findFirst()
+                                .orElse(null);
+
+                        MethodParameter methodParameter = MethodParameter
+                                .builder().parameter(matchedPathVariableParam)
+                                .actualValue(requestString)
+                                .build();
+
+                        methodParameters.add(methodParameter);
+                    }
+                }
+
+                methodParameters.sort(Comparator.comparing(p -> p.getParameter().getName()));
+
 
                 if (HttpMethod.GET.name().equals(request.getMethod()) && method.isAnnotationPresent(GetMapping.class)) {
                     handlerMethod = HandlerMethod.builder()
@@ -72,15 +106,15 @@ public class PathPatternMatchableHandlerMapping implements HandlerMapping {
         return handlerMethod;
     }
 
-    private boolean isUrlMatchController(String requestPath, String controllerPath) {
+    private boolean isUrlMatchController(String requestPath, String controllerMethodFullPath) {
         List<String> requestPathParts = Arrays.stream(requestPath.split("/")).toList();
-        List<String> controllerPathParts = Arrays.stream(controllerPath.split("/")).toList();
+        List<String> methodPathParts = Arrays.stream(controllerMethodFullPath.split("/")).toList();
 
         boolean isMatch = false;
 
         for (int i = 0; i < requestPathParts.size(); i++) {
             String requestString = requestPathParts.get(i);
-            String controllerString = controllerPathParts.get(i);
+            String controllerString = methodPathParts.get(i);
 
             boolean stringsAreEqual = requestString.equals(controllerString);
             boolean numbersAreEqual = isRequestPathPartStringNumber(requestString) && isControllerPathPartStringExpectsIdParameter(controllerString);

@@ -16,14 +16,11 @@ public class TestController {
     @Autowired
     private TestService testService;
 
-/*    @GetMapping("/{userId}/profile/{profileId}/menu")
+    @GetMapping("/{userId}/profile/{profileId}/menu")
     @ResponseStatus(HttpStatus.OK)
-    public TestResponse get(@PathVariable("userid") Long userId,
-                            @PathVariable("profileId") String profileId,
-                            @RequestParam("name") String name,
-                            @RequestParam("age") Integer age) {
-        return testService.getTestResponse();
-    }*/
+    public TestResponse get(@PathVariable("profileId") Integer profileId, @PathVariable("userId") String userId) {
+        return testService.getTestResponse(userId, profileId);
+    }
 
     @GetMapping("/user")
     @ResponseStatus(HttpStatus.OK)
