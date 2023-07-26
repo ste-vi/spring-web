@@ -6,6 +6,7 @@ import lombok.SneakyThrows;
 import stevi.spring.web.annotations.PathVariable;
 import stevi.spring.web.annotations.RequestBody;
 import stevi.spring.web.context.WebApplicationContext;
+import stevi.spring.web.exceptions.RequestPathHandlerNotFoundException;
 import stevi.spring.web.handler.pathcontext.MethodParameterPathContext;
 import stevi.spring.web.handler.pathcontext.MethodPathContext;
 import stevi.spring.web.util.StreamUtils;
@@ -41,6 +42,12 @@ public class PathPatternMatchableHandlerMapping implements HandlerMapping {
         for (Map.Entry<MethodPathContext, Object> entry : requestPathToControllerMap.entrySet()) {
             MethodPathContext methodFullPath = entry.getKey();
             Object controller = entry.getValue();
+
+            boolean httpMethodMatch = request.getMethod().equals(methodFullPath.getHttpMethod().name());
+            if (!httpMethodMatch) {
+                continue;
+            }
+
             boolean isUrlMatch = isUrlMatchController(requestPathInfo, methodFullPath.getMethodFullPath());
             if (isUrlMatch) {
                 Method method = methodFullPath.getMethod();
@@ -51,6 +58,26 @@ public class PathPatternMatchableHandlerMapping implements HandlerMapping {
                 methodParameters.addAll(getMethodParametersForRequestBody(request, methodFullPath, method));
 
                 methodParameters.sort(Comparator.comparing(p -> p.getParameter().getName()));
+
+                if (methodParameters.size() != method.getParameterCount()) {
+                    Arrays.stream(method.getParameters())
+                            .forEach(param -> {
+                                        boolean isParameterNotPresent = methodParameters.stream()
+                                                .filter(methodParameter -> param.equals(methodParameter.getParameter()))
+                                                .findAny()
+                                                .isEmpty();
+
+                                        if (isParameterNotPresent) {
+                                            MethodParameter missedMethodParameter = MethodParameter
+                                                    .builder().parameter(param)
+                                                    .actualValue(null)
+                                                    .build();
+
+                                            methodParameters.add(missedMethodParameter);
+                                        }
+                                    }
+                            );
+                }
 
                 handlerMethod = HandlerMethod.builder()
                         .method(method)
@@ -63,7 +90,7 @@ public class PathPatternMatchableHandlerMapping implements HandlerMapping {
         }
 
         if (handlerMethod == null) {
-            throw new RuntimeException("No method handler found for path: %s".formatted(requestPathInfo));
+            throw new RequestPathHandlerNotFoundException("No http method handler found for path: %s".formatted(requestPathInfo));
         }
 
         return handlerMethod;
@@ -162,6 +189,10 @@ public class PathPatternMatchableHandlerMapping implements HandlerMapping {
     private boolean isUrlMatchController(String requestPath, String controllerMethodFullPath) {
         List<String> requestPathParts = Arrays.stream(requestPath.split("/")).toList();
         List<String> methodPathParts = Arrays.stream(controllerMethodFullPath.split("/")).toList();
+
+        if (requestPathParts.size() != methodPathParts.size()) {
+            return false;
+        }
 
         boolean isMatch = false;
 

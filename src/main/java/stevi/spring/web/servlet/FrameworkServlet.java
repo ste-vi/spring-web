@@ -4,6 +4,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import stevi.spring.web.http.HttpMethod;
 
 import java.io.IOException;
 import java.util.Set;
@@ -13,7 +14,8 @@ public abstract class FrameworkServlet extends HttpServlet {
     /**
      * HTTP methods supported by {@link jakarta.servlet.http.HttpServlet}.
      */
-    private static final Set<String> HTTP_SERVLET_METHODS = Set.of("DELETE", "HEAD", "GET", "OPTIONS", "POST", "PUT", "TRACE");
+    private static final Set<String> HTTP_SERVLET_METHODS = Set.of(HttpMethod.DELETE.name(), HttpMethod.HEAD.name(), HttpMethod.GET.name(),
+            HttpMethod.OPTIONS.name(), HttpMethod.POST.name(), HttpMethod.PUT.name(), HttpMethod.TRACE.name());
 
     protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         if (HTTP_SERVLET_METHODS.contains(request.getMethod())) {
@@ -32,12 +34,22 @@ public abstract class FrameworkServlet extends HttpServlet {
      * @see #doHead
      */
     @Override
-    protected final void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected final void doGet(HttpServletRequest request, HttpServletResponse response) {
         processRequest(request, response);
     }
 
     @Override
-    protected final void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected final void doPost(HttpServletRequest request, HttpServletResponse response) {
+        processRequest(request, response);
+    }
+
+    @Override
+    protected final void doPut(HttpServletRequest request, HttpServletResponse response) {
+        processRequest(request, response);
+    }
+
+    @Override
+    protected final void doDelete(HttpServletRequest request, HttpServletResponse response) {
         processRequest(request, response);
     }
 

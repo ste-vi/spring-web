@@ -11,6 +11,10 @@ public final class MethodParameterCastUtil {
                     Object actualValue = methodParameter.getActualValue();
                     Class<?> aClass = methodParameter.getParameter().getType();
 
+                    if (actualValue == null) {
+                        return null;
+                    }
+
                     if (aClass == Integer.class) {
                         return Integer.valueOf((String) actualValue);
                     } else if (aClass == Long.class) {

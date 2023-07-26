@@ -2,6 +2,7 @@ package stevi.spring.web.handler.pathcontext;
 
 import lombok.Builder;
 import lombok.Data;
+import stevi.spring.web.http.HttpMethod;
 
 import java.lang.reflect.Method;
 import java.util.List;
@@ -10,8 +11,9 @@ import java.util.List;
 @Data
 public class MethodPathContext {
 
-    private String methodFullPath;
     private Method method;
+    private String methodFullPath;
+    private HttpMethod httpMethod;
     private List<MethodParameterPathContext> methodParameterPathContexts;
 
 }

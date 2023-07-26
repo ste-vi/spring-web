@@ -19,6 +19,7 @@ dependencies {
     implementation 'org.apache.tomcat.embed:tomcat-embed-el:10.1.11'
 
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.4'
 
     compileOnly 'jakarta.servlet:jakarta.servlet-api:6.0.0'
 

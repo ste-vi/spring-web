@@ -1,12 +1,17 @@
 package stevi.spring.web.handler;
 
-import stevi.spring.web.annotations.PostMapping;
+import stevi.spring.web.annotations.DeleteMapping;
+import stevi.spring.web.annotations.GetMapping;
+import stevi.spring.web.annotations.PatchMapping;
 import stevi.spring.web.annotations.PathVariable;
+import stevi.spring.web.annotations.PostMapping;
+import stevi.spring.web.annotations.PutMapping;
 import stevi.spring.web.annotations.RequestBody;
 import stevi.spring.web.annotations.RequestMapping;
 import stevi.spring.web.annotations.RequestParam;
 import stevi.spring.web.handler.pathcontext.MethodParameterPathContext;
 import stevi.spring.web.handler.pathcontext.MethodPathContext;
+import stevi.spring.web.http.HttpMethod;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -28,28 +33,51 @@ public final class PathContextBuilderUtil {
                     RequestMapping requestMapping = controllerClass.getAnnotation(RequestMapping.class);
 
                     for (var method : controllerClass.getDeclaredMethods()) {
+                        if (method.isAnnotationPresent(GetMapping.class)) {
+                            String httpMethodPath = method.getAnnotation(GetMapping.class).value();
+                            MethodPathContext methodPathContext = initMethodPathContext(requestMapping, httpMethodPath, method);
+                            methodPathContext.setHttpMethod(HttpMethod.GET);
+                            methodPathContextToControllerMap.put(methodPathContext, controller);
+                        }
                         if (method.isAnnotationPresent(PostMapping.class)) {
-                            MethodPathContext methodPathContext = initMethodPathContext(requestMapping, method);
+                            String httpMethodPath = method.getAnnotation(PostMapping.class).value();
+                            MethodPathContext methodPathContext = initMethodPathContext(requestMapping, httpMethodPath, method);
+                            methodPathContext.setHttpMethod(HttpMethod.POST);
+                            methodPathContextToControllerMap.put(methodPathContext, controller);
+                        }
+                        if (method.isAnnotationPresent(PutMapping.class)) {
+                            String httpMethodPath = method.getAnnotation(PutMapping.class).value();
+                            MethodPathContext methodPathContext = initMethodPathContext(requestMapping, httpMethodPath, method);
+                            methodPathContext.setHttpMethod(HttpMethod.PUT);
+                            methodPathContextToControllerMap.put(methodPathContext, controller);
+                        }
+                        if (method.isAnnotationPresent(PatchMapping.class)) {
+                            String httpMethodPath = method.getAnnotation(PatchMapping.class).value();
+                            MethodPathContext methodPathContext = initMethodPathContext(requestMapping, httpMethodPath, method);
+                            methodPathContext.setHttpMethod(HttpMethod.PATCH);
+                            methodPathContextToControllerMap.put(methodPathContext, controller);
+                        }
+                        if (method.isAnnotationPresent(DeleteMapping.class)) {
+                            String httpMethodPath = method.getAnnotation(DeleteMapping.class).value();
+                            MethodPathContext methodPathContext = initMethodPathContext(requestMapping, httpMethodPath, method);
+                            methodPathContext.setHttpMethod(HttpMethod.DELETE);
                             methodPathContextToControllerMap.put(methodPathContext, controller);
                         }
                     }
                 });
 
-
         return methodPathContextToControllerMap;
     }
 
-    private static MethodPathContext initMethodPathContext(RequestMapping requestMapping, Method method) {
-        PostMapping getMapping = method.getAnnotation(PostMapping.class);
-
-        String methodMath = getMapping.value().startsWith("/") ? getMapping.value().substring(1) : getMapping.value();
+    private static MethodPathContext initMethodPathContext(RequestMapping requestMapping, String httpMethodPath, Method method) {
+        httpMethodPath = httpMethodPath.startsWith("/") ? httpMethodPath.substring(1) : httpMethodPath;
 
         String fullMethodPath;
-        if (methodMath.isEmpty()) {
+        if (httpMethodPath.isEmpty()) {
             fullMethodPath = requestMapping.value();
         } else {
             String requestMappingPath = requestMapping.value().endsWith("/") ? requestMapping.value() : requestMapping.value() + "/";
-            fullMethodPath = requestMappingPath + methodMath;
+            fullMethodPath = requestMappingPath + httpMethodPath;
         }
 
         return MethodPathContext.builder()

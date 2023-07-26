@@ -1,12 +1,14 @@
 package stevi.spring.web.servlet;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import javassist.NotFoundException;
 import lombok.SneakyThrows;
-import stevi.spring.core.config.DefaultConfig;
 import stevi.spring.web.context.WebApplicationContext;
+import stevi.spring.web.exceptions.ExceptionResponse;
+import stevi.spring.web.exceptions.RequestPathHandlerNotFoundException;
 import stevi.spring.web.handler.Handler;
 import stevi.spring.web.handler.HandlerMapping;
 import stevi.spring.web.handler.HandlerMethod;
@@ -27,11 +29,17 @@ public class DispatcherServlet extends FrameworkServlet {
         this.handlerMapping = new PathPatternMatchableHandlerMapping(webApplicationContext);
         this.handler = new RequestMappingHandler();
         this.objectMapper = new ObjectMapper();
+        this.objectMapper.registerModule(new JavaTimeModule());
     }
 
     @Override
-    protected void doService(HttpServletRequest request, HttpServletResponse response) throws Exception {
-        doDispatch(request, response);
+    protected void doService(HttpServletRequest request, HttpServletResponse response) {
+        try {
+            doDispatch(request, response);
+        } catch (RequestPathHandlerNotFoundException exception) {
+            ExceptionResponse exceptionResponse = exception.getExceptionResponse();
+            writeJsonResponse(exceptionResponse, exceptionResponse.statusCode(), response);
+        }
     }
 
     private void doDispatch(HttpServletRequest request, HttpServletResponse response) {
@@ -56,12 +64,17 @@ public class DispatcherServlet extends FrameworkServlet {
     }
 
     private void renderJSONView(ModelAndView modelAndView, HttpServletResponse response) throws IOException {
+        writeJsonResponse(modelAndView.getModel(), modelAndView.getHttpStatus().getValue(), response);
+    }
+
+    @SneakyThrows
+    private void writeJsonResponse(Object model, int status, HttpServletResponse response) {
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
-        response.setStatus(modelAndView.getHttpStatus().getValue());
+        response.setStatus(status);
 
-        if (modelAndView.getModel() != null) {
-            response.getWriter().write(objectMapper.writeValueAsString(modelAndView.getModel()));
+        if (model != null) {
+            response.getWriter().write(objectMapper.writeValueAsString(model));
         }
     }
 }
