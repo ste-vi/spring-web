@@ -8,18 +8,18 @@ public final class MethodParameterCastUtil {
         return methodParameters
                 .stream()
                 .map(methodParameter -> {
-                    String actualValue = methodParameter.getActualValue();
+                    Object actualValue = methodParameter.getActualValue();
                     Class<?> aClass = methodParameter.getParameter().getType();
 
                     if (aClass == Integer.class) {
-                        return Integer.valueOf(actualValue);
+                        return Integer.valueOf((String) actualValue);
                     } else if (aClass == Long.class) {
-                        return Long.valueOf(actualValue);
+                        return Long.valueOf((String) actualValue);
                     } else if (aClass == String.class) {
                         return actualValue;
+                    } else {
+                        return actualValue;
                     }
-
-                    return null;
                 })
                 .toArray();
     }

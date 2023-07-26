@@ -36,6 +36,11 @@ public abstract class FrameworkServlet extends HttpServlet {
         processRequest(request, response);
     }
 
+    @Override
+    protected final void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        processRequest(request, response);
+    }
+
     protected final void processRequest(HttpServletRequest request, HttpServletResponse response) {
         try {
             doService(request, response);

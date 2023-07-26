@@ -1,14 +1,18 @@
 package stevi.spring.test;
 
+import lombok.extern.slf4j.Slf4j;
 import stevi.spring.core.anotation.Autowired;
 import stevi.spring.web.annotations.Controller;
 import stevi.spring.web.annotations.GetMapping;
 import stevi.spring.web.annotations.PathVariable;
+import stevi.spring.web.annotations.PostMapping;
+import stevi.spring.web.annotations.RequestBody;
 import stevi.spring.web.annotations.RequestMapping;
 import stevi.spring.web.annotations.RequestParam;
 import stevi.spring.web.annotations.ResponseStatus;
 import stevi.spring.web.http.HttpStatus;
 
+@Slf4j
 @Controller
 @RequestMapping("/users")
 public class TestController {
@@ -35,5 +39,13 @@ public class TestController {
     public TestResponse getTwo(@RequestParam("name") String name,
                                @RequestParam("age") Integer age) {
         return testService.getTestResponse(name, age);
+    }
+
+    @PostMapping("/{userId}/post")
+    @ResponseStatus(HttpStatus.OK)
+    public void post(@PathVariable("userId") String userId, @RequestBody TestRequest testRequest, @RequestParam("name") String name) {
+        log.info(userId);
+        log.info(name);
+        log.info(testRequest.toString());
     }
 }

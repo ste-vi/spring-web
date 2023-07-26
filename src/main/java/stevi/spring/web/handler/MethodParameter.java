@@ -11,5 +11,5 @@ public class MethodParameter {
 
     private Parameter parameter;
 
-    private String actualValue;
+    private Object actualValue;
 }

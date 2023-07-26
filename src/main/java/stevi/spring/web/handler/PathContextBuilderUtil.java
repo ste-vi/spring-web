@@ -1,7 +1,8 @@
 package stevi.spring.web.handler;
 
-import stevi.spring.web.annotations.GetMapping;
+import stevi.spring.web.annotations.PostMapping;
 import stevi.spring.web.annotations.PathVariable;
+import stevi.spring.web.annotations.RequestBody;
 import stevi.spring.web.annotations.RequestMapping;
 import stevi.spring.web.annotations.RequestParam;
 import stevi.spring.web.handler.pathcontext.MethodParameterPathContext;
@@ -27,7 +28,7 @@ public final class PathContextBuilderUtil {
                     RequestMapping requestMapping = controllerClass.getAnnotation(RequestMapping.class);
 
                     for (var method : controllerClass.getDeclaredMethods()) {
-                        if (method.isAnnotationPresent(GetMapping.class)) {
+                        if (method.isAnnotationPresent(PostMapping.class)) {
                             MethodPathContext methodPathContext = initMethodPathContext(requestMapping, method);
                             methodPathContextToControllerMap.put(methodPathContext, controller);
                         }
@@ -39,7 +40,7 @@ public final class PathContextBuilderUtil {
     }
 
     private static MethodPathContext initMethodPathContext(RequestMapping requestMapping, Method method) {
-        GetMapping getMapping = method.getAnnotation(GetMapping.class);
+        PostMapping getMapping = method.getAnnotation(PostMapping.class);
 
         String methodMath = getMapping.value().startsWith("/") ? getMapping.value().substring(1) : getMapping.value();
 
@@ -69,6 +70,11 @@ public final class PathContextBuilderUtil {
             if (parameter.isAnnotationPresent(RequestParam.class)) {
                 RequestParam requestParam = parameter.getAnnotation(RequestParam.class);
                 MethodParameterPathContext parameterPathContext = getParameterPathContext(requestParam.value(), parameter);
+                methodParameterPathContexts.add(parameterPathContext);
+            }
+            if (parameter.isAnnotationPresent(RequestBody.class)) {
+                MethodParameterPathContext parameterPathContext = getParameterPathContext(parameter.getName(), parameter);
+                parameterPathContext.setJavaParameterType(parameter.getType());
                 methodParameterPathContexts.add(parameterPathContext);
             }
         }
