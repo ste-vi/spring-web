@@ -1,4 +1,6 @@
-package stevi.spring.web.handler;
+package stevi.spring.web.servlet.handler.util;
+
+import stevi.spring.web.servlet.handlermethod.MethodParameter;
 
 import java.util.List;
 

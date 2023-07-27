@@ -1,56 +1,53 @@
-package stevi.spring.web.webserver;
+package stevi.spring.web.webserver.tomcat;
 
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.WebResourceRoot;
 import org.apache.catalina.startup.ContextConfig;
 import org.apache.catalina.startup.Tomcat;
 import org.apache.catalina.webresources.StandardRoot;
-import stevi.spring.Main;
 import stevi.spring.web.servlet.DispatcherServlet;
+import stevi.spring.web.webserver.WebServer;
 
 import java.io.File;
 import java.net.URL;
 
+@Slf4j
 public class TomcatWebServer implements WebServer {
 
-    private Tomcat tomcat;
+    private final int port;
     private final DispatcherServlet dispatcherServlet;
+    private Tomcat tomcat;
 
-    public TomcatWebServer(DispatcherServlet dispatcherServlet) {
+    public TomcatWebServer(String port, DispatcherServlet dispatcherServlet, Class<?> mainClass) {
+        this.port = port == null ? DEFAULT_PORT : Integer.parseInt(port);
         this.dispatcherServlet = dispatcherServlet;
+        initTomcat(mainClass);
     }
 
-    @Override
-    public int getPort() {
-        return DEFAULT_PORT;
-    }
-
-    @SneakyThrows
-    @Override
-    public void start() {
+    private void initTomcat(Class<?> mainClass) {
         tomcat = createTomcatServer();
-        Context context = createContext(tomcat);
+        Context context = createContext(tomcat, mainClass);
         registerDispatcherServlet(context);
-        startConnection(tomcat);
     }
 
     private Tomcat createTomcatServer() {
         Tomcat tomcat = new Tomcat();
         tomcat.setBaseDir("/");
-        tomcat.setPort(DEFAULT_PORT);
+        tomcat.setPort(port);
 
         return tomcat;
     }
 
-    private Context createContext(Tomcat tomcat) {
+    private Context createContext(Tomcat tomcat, Class<?> mainClass) {
         String docBase = new File(".").getAbsolutePath();
         Context context = tomcat.addContext("", docBase);
         context.addLifecycleListener(new ContextConfig());
 
         final WebResourceRoot root = new StandardRoot(context);
-        final URL url = findClassLocation(Main.class);
+        final URL url = findClassLocation(mainClass);
         root.createWebResourceSet(WebResourceRoot.ResourceSetType.PRE, "/WEB-INF/classes", url, "/");
 
         context.setResources(root);
@@ -58,19 +55,31 @@ public class TomcatWebServer implements WebServer {
         return context;
     }
 
+    private URL findClassLocation(Class<?> clazz) {
+        return clazz.getProtectionDomain().getCodeSource().getLocation();
+    }
+
     private void registerDispatcherServlet(Context context) {
         Tomcat.addServlet(context, "DispatcherServlet", dispatcherServlet);
         context.addServletMappingDecoded("/*", "DispatcherServlet");
+    }
+
+    @Override
+    public int getPort() {
+        return port;
+    }
+
+    @SneakyThrows
+    @Override
+    public void start() {
+        startConnection(tomcat);
+        log.info("Application started on port {}", port);
     }
 
     private void startConnection(Tomcat tomcat) throws LifecycleException {
         tomcat.getConnector();
         tomcat.start();
         tomcat.getServer().await();
-    }
-
-    private URL findClassLocation(Class<?> clazz) {
-        return clazz.getProtectionDomain().getCodeSource().getLocation();
     }
 
     @SneakyThrows

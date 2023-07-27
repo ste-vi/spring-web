@@ -1,4 +1,4 @@
-package stevi.spring.web.handler;
+package stevi.spring.web.servlet.handlermethod;
 
 import lombok.Builder;
 import lombok.Data;

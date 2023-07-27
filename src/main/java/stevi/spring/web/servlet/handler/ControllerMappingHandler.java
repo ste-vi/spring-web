@@ -1,4 +1,4 @@
-package stevi.spring.web.handler;
+package stevi.spring.web.servlet.handler;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -7,30 +7,34 @@ import lombok.SneakyThrows;
 import stevi.spring.web.annotations.ResponseStatus;
 import stevi.spring.web.http.HttpStatus;
 import stevi.spring.web.servlet.ModelAndView;
+import stevi.spring.web.servlet.handlermethod.HandlerMethod;
+import stevi.spring.web.servlet.handler.util.MethodParameterCastUtil;
 import stevi.spring.web.servlet.view.JsonView;
 
 import java.lang.reflect.Method;
 
 @RequiredArgsConstructor
-public class RequestMappingHandler implements Handler {
+public class ControllerMappingHandler implements Handler {
 
     @SneakyThrows
     @Override
     public ModelAndView handle(HttpServletRequest request, HttpServletResponse response, HandlerMethod handlerMethod) {
+        Object[] params = MethodParameterCastUtil.getCastedMethodParameterValues(handlerMethod.getMethodParameters());
         Method method = handlerMethod.getMethod();
 
-        Object[] params = MethodParameterCastUtil.getCastedMethodParameterValues(handlerMethod.getMethodParameters());
-
         Object model = method.invoke(handlerMethod.getBean(), params);
-
-        HttpStatus status = method.isAnnotationPresent(ResponseStatus.class)
-                ? method.getAnnotation(ResponseStatus.class).value()
-                : HttpStatus.OK;
+        HttpStatus status = getHttpStatus(method);
 
         return ModelAndView.builder()
+                .httpStatus(status)
                 .model(model)
                 .view(new JsonView())
-                .httpStatus(status)
                 .build();
+    }
+
+    private HttpStatus getHttpStatus(Method method) {
+        return method.isAnnotationPresent(ResponseStatus.class)
+                ? method.getAnnotation(ResponseStatus.class).value()
+                : HttpStatus.OK;
     }
 }

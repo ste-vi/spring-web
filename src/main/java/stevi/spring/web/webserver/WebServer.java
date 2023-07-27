@@ -4,7 +4,6 @@ public interface WebServer {
 
     int DEFAULT_PORT = 8080;
 
-
     int getPort();
 
     void start();

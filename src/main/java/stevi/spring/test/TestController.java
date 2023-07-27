@@ -2,6 +2,7 @@ package stevi.spring.test;
 
 import lombok.extern.slf4j.Slf4j;
 import stevi.spring.core.anotation.Autowired;
+import stevi.spring.core.anotation.Value;
 import stevi.spring.web.annotations.Controller;
 import stevi.spring.web.annotations.DeleteMapping;
 import stevi.spring.web.annotations.GetMapping;

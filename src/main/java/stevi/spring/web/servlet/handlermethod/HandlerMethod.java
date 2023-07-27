@@ -1,12 +1,10 @@
-package stevi.spring.web.handler;
+package stevi.spring.web.servlet.handlermethod;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
 import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
-import java.util.ArrayList;
 import java.util.List;
 
 @AllArgsConstructor
@@ -16,13 +14,7 @@ public class HandlerMethod {
 
     private Method method;
 
-    private Parameter[] parameters;
-
     private List<MethodParameter> methodParameters;
 
-    private Class<?> beanType;
-
     private Object bean;
-
-
 }

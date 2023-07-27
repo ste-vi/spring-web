@@ -1,4 +1,4 @@
-package stevi.spring.web.handler.pathcontext;
+package stevi.spring.web.servlet.mappingresolver.pathcontext;
 
 import lombok.Builder;
 import lombok.Data;
