@@ -10,13 +10,17 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 
+/**
+ * Filter implementation to log incoming requests.
+ */
 @Slf4j
 @WebFilter(urlPatterns = "*")
-public class DefaultLoggingFilter extends OncePerRequestFilter {
+public class DefaultLoggingFilter extends GenericFilter {
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        log.debug("Received new request with path: {}", ((HttpServletRequest) request).getPathInfo());
+        HttpServletRequest httpServletRequest = (HttpServletRequest) request;
+        log.debug("Received new request with method {} and path: {}", httpServletRequest.getMethod(), httpServletRequest.getPathInfo());
         chain.doFilter(request, response);
     }
 }

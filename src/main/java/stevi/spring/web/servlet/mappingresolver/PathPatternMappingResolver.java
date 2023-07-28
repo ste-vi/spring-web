@@ -27,6 +27,9 @@ import java.util.Optional;
 
 import static java.util.stream.Collectors.toMap;
 
+/**
+ * Implementation of {@link MappingResolver} which resolves handler methods by applying path patter logic.
+ */
 public class PathPatternMappingResolver implements MappingResolver {
 
     private final Map<MethodPathContext, Object> requestPathToControllerMap;
@@ -36,6 +39,9 @@ public class PathPatternMappingResolver implements MappingResolver {
         requestPathToControllerMap = PathContextBuilderUtil.initMethodPathContextToControllerMap(applicationContext.getAllWebBeans());
     }
 
+    /**
+     * Resolves controller handler method from http request.
+     */
     @Override
     public HandlerMethod resolve(HttpServletRequest request) {
         return requestPathToControllerMap.entrySet()

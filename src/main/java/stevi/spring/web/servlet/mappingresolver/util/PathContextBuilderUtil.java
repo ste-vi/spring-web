@@ -21,8 +21,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+/**
+ * Util class that builds path contexts from all controller methods by scanning request handler annotations of all available controllers.
+ */
 public final class PathContextBuilderUtil {
 
+    /**
+     * Creates a map of method path context to controller object from controllers list.
+     */
     public static Map<MethodPathContext, Object> initMethodPathContextToControllerMap(List<Object> controllers) {
         Map<MethodPathContext, Object> methodPathContextToControllerMap = new HashMap<>();
         controllers.stream()

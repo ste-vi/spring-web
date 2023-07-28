@@ -5,6 +5,9 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.SneakyThrows;
 
+/**
+ * Class which builds JSON response
+ */
 public class JsonResponseBuilder implements ResponseBuilder {
 
     private final ObjectMapper objectMapper;
@@ -14,6 +17,9 @@ public class JsonResponseBuilder implements ResponseBuilder {
         this.objectMapper.registerModule(new JavaTimeModule());
     }
 
+    /**
+     * Takes model object and status codes and writes it into response.
+     */
     @Override
     @SneakyThrows
     public void buildResponse(Object model, int statusCode, HttpServletResponse response) {

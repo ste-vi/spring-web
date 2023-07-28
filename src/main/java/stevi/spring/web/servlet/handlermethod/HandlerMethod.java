@@ -7,6 +7,9 @@ import lombok.Data;
 import java.lang.reflect.Method;
 import java.util.List;
 
+/**
+ * POJO which contains needed data for handler method execution.
+ */
 @AllArgsConstructor
 @Builder
 @Data

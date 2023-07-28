@@ -9,10 +9,21 @@ import stevi.spring.web.webserver.tomcat.TomcatWebServer;
 import stevi.spring.web.webserver.tomcat.TomcatWebServerStarter;
 import stevi.spring.web.webserver.unset.UnsetWebServerStarter;
 
+/**
+ * Class which starts web application with web server and web beans loaded.
+ * Usually is used from java main method.
+ */
 public class WebApplication {
 
     private static WebServerStarter webServerStarter;
 
+    /**
+     * Starts web application with web server and url handlers.
+     *
+     * @param packagesToScan folders to scan for dependencies
+     * @param webServerClass class of a web
+     * @return {@link WebApplicationContext}
+     */
     public static ApplicationContext run(String packagesToScan, Class<? extends WebServer> webServerClass) {
         ApplicationContext applicationContext = Application.run(packagesToScan);
         WebApplicationContext webApplicationContext = createWebApplicationContext(applicationContext);
@@ -44,6 +55,9 @@ public class WebApplication {
         }
     }
 
+    /**
+     * Stops application and web server.
+     */
     public static void stop() {
         Application.stop();
         webServerStarter.stop();

@@ -5,6 +5,9 @@ import lombok.Data;
 
 import java.lang.reflect.Parameter;
 
+/**
+ * POJO which contains needed parameters data for handler method execution.
+ */
 @Builder
 @Data
 public class MethodParameter {

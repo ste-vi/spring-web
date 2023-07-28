@@ -4,8 +4,14 @@ import stevi.spring.web.servlet.handlermethod.MethodParameter;
 
 import java.util.List;
 
+/**
+ * Util class which contains methods for casting methods parameters into objects.
+ */
 public final class MethodParameterCastUtil {
 
+    /**
+     * Takes a list of method parameters and returns initialized object array.
+     */
     public static Object[] getCastedMethodParameterValues(List<MethodParameter> methodParameters) {
         return methodParameters
                 .stream()

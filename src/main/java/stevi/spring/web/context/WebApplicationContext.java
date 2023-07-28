@@ -10,6 +10,10 @@ import stevi.spring.web.annotations.Controller;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Web specific implementation of {@link ApplicationContext}.
+ * Holds web related beans, also can access beans from general {@link stevi.spring.core.context.AutowiredApplicationContext}.
+ */
 public class WebApplicationContext implements ApplicationContext {
 
     @Setter

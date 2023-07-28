@@ -7,6 +7,9 @@ import stevi.spring.web.http.HttpMethod;
 import java.lang.reflect.Method;
 import java.util.List;
 
+/**
+ * POJO which contains all needed information for resolving method from url.
+ */
 @Builder
 @Data
 public class MethodPathContext {

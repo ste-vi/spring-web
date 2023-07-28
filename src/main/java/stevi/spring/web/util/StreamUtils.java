@@ -5,6 +5,9 @@ import lombok.SneakyThrows;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 
+/**
+ * Utils class for helping with stream bytes operations.
+ */
 public final class StreamUtils {
 
     public static final int DEFAULT_BUFFER_SIZE = 1024;

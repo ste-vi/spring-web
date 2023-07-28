@@ -14,6 +14,9 @@ import stevi.spring.web.webserver.WebServer;
 import java.io.File;
 import java.net.URL;
 
+/**
+ * Tomcat implementation of web server.
+ */
 @Slf4j
 public class TomcatWebServer implements WebServer {
 

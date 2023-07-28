@@ -10,6 +10,9 @@ import stevi.spring.web.webserver.WebServerStarter;
 
 import java.util.Set;
 
+/**
+ * Starter class for tomcat web server.
+ */
 public class TomcatWebServerStarter implements WebServerStarter {
 
     private final TomcatWebServer webServer;

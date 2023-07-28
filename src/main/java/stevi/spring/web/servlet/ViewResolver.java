@@ -8,6 +8,9 @@ import stevi.spring.web.servlet.view.HtmlPageView;
 import stevi.spring.web.servlet.view.JsonView;
 import stevi.spring.web.servlet.view.View;
 
+/**
+ * Class which resolves view response builder based on view.
+ */
 public class ViewResolver {
 
     private final WebApplicationContext webApplicationContext;
@@ -16,6 +19,9 @@ public class ViewResolver {
         this.webApplicationContext = webApplicationContext;
     }
 
+    /**
+     * Returns {@link ResponseBuilder} based on incoming {@link View}
+     */
     public ResponseBuilder resolve(View view) {
         if (view instanceof HtmlPageView) {
             return webApplicationContext.getWebBean(HtmlPageResponseBuilder.class);
@@ -26,6 +32,9 @@ public class ViewResolver {
         }
     }
 
+    /**
+     * Returns {@link ResponseBuilder} based on incoming {@link View} for rendering exceptions.
+     */
     public ResponseBuilder resolveForExceptions() {
         return webApplicationContext.getWebBean(JsonResponseBuilder.class);
     }

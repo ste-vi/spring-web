@@ -1,5 +1,8 @@
 package stevi.spring.web.http;
 
+/**
+ * Enumeration of HTTP methods.
+ */
 public enum HttpMethod {
 
     GET,

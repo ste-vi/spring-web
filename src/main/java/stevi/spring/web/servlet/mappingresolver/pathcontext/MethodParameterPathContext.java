@@ -5,6 +5,9 @@ import lombok.Data;
 
 import java.lang.annotation.Annotation;
 
+/**
+ * POJO which contains all needed information for resolving method parameter from url.
+ */
 @Builder
 @Data
 public class MethodParameterPathContext {

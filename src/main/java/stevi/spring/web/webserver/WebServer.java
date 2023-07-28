@@ -1,5 +1,8 @@
 package stevi.spring.web.webserver;
 
+/**
+ * Interface represents contract for any web server implementation.
+ */
 public interface WebServer {
 
     int DEFAULT_PORT = 8080;

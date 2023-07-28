@@ -6,7 +6,6 @@ import lombok.Getter;
 /**
  * Enumeration of HTTP status codes.
  */
-
 @Getter
 @AllArgsConstructor
 public enum HttpStatus {

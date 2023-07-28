@@ -4,6 +4,9 @@ import stevi.spring.web.http.HttpStatus;
 
 import java.time.LocalDateTime;
 
+/**
+ * Implementation of {@link FrameworkException} for handling not found request path handlers.
+ */
 public class RequestPathHandlerNotFoundException extends FrameworkException {
 
     private final ExceptionResponse exceptionResponse;

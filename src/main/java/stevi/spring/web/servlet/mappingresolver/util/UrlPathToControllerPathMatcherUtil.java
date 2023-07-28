@@ -3,8 +3,14 @@ package stevi.spring.web.servlet.mappingresolver.util;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Util class that helps match incoming url request path with controller handler method path.
+ */
 public final class UrlPathToControllerPathMatcherUtil {
 
+    /**
+     * Checks if request path is matched to controller method full path.
+     */
     public static boolean isUrlMatchController(String requestPath, String controllerMethodFullPath) {
         List<String> requestPathParts = Arrays.stream(requestPath.split("/")).toList();
         List<String> methodPathParts = Arrays.stream(controllerMethodFullPath.split("/")).toList();
