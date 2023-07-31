@@ -48,7 +48,8 @@ public class WebApplication {
 
     private static void startWebServer() {
         Runnable webServerRunnable = webServerStarter::start;
-        new Thread(webServerRunnable, "webServer").start();
+        Thread webServerThread = new Thread(webServerRunnable, "webServer");
+        webServerThread.start();
     }
 
     private static WebServerStarter applyWebServerStrategy(Class<? extends WebServer> webServerClass,

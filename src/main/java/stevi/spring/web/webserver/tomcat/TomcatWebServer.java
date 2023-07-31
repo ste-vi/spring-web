@@ -13,6 +13,7 @@ import stevi.spring.web.webserver.WebServer;
 
 import java.io.File;
 import java.net.URL;
+import java.util.logging.Logger;
 
 /**
  * Tomcat implementation of web server.
@@ -31,9 +32,14 @@ public class TomcatWebServer implements WebServer {
     }
 
     private void initTomcat(Class<?> mainClass) {
+        disableDefaultLogging();
         tomcat = createTomcatServer();
         Context context = createContext(tomcat, mainClass);
         registerDispatcherServlet(context);
+    }
+
+    private void disableDefaultLogging() {
+        Logger.getLogger("org.apache").setLevel(java.util.logging.Level.WARNING);
     }
 
     private Tomcat createTomcatServer() {
@@ -75,8 +81,8 @@ public class TomcatWebServer implements WebServer {
     @SneakyThrows
     @Override
     public void start() {
+        log.info("Tomcat started on port {}", port);
         startConnection(tomcat);
-        log.info("Application started on port {}", port);
     }
 
     private void startConnection(Tomcat tomcat) throws LifecycleException {

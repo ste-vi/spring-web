@@ -1,5 +1,6 @@
 package stevi.spring.web.servlet.mappingresolver.util;
 
+import lombok.extern.slf4j.Slf4j;
 import stevi.spring.web.annotations.DeleteMapping;
 import stevi.spring.web.annotations.GetMapping;
 import stevi.spring.web.annotations.PatchMapping;
@@ -24,6 +25,7 @@ import java.util.Optional;
 /**
  * Util class that builds path contexts from all controller methods by scanning request handler annotations of all available controllers.
  */
+@Slf4j
 public final class PathContextBuilderUtil {
 
     /**
@@ -84,6 +86,8 @@ public final class PathContextBuilderUtil {
         httpMethodPath = formatHttpMethodPath(httpMethodPath);
         String fullMethodPath = getFullMethodPath(requestMappingPath, httpMethodPath);
         List<MethodParameterPathContext> methodParameterPathContexts = getMethodParameterPathContexts(method);
+
+        log.debug("Registering {} endpoint with {} path", httpMethod.name(), fullMethodPath);
 
         return MethodPathContext.builder()
                 .method(method)
